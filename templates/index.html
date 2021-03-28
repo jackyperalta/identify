@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>IDENTIFY</title>
+    <link
+    rel="stylesheet"
+    href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+    crossorigin="anonymous"/>
+</head>
+<body background="{{url_for('static', filename='background.png')}}">
+    <center id="logo"> <img src="{{url_for('static', filename='logo.png')}}" alt="Identify" width="400" height=auto > </center>
+    <center>
+        <img id="img" src="{{url_for('static', filename='begin.png')}}" width="auto" height=350 style=margin-top:-149px;/>
+    </center>
+    <div>
+        <button onclick="startTimer()" id="readyButton" type="button" class="btn btn-success" style=margin-left:200px;>Ready</button>
+    </div>
+    <center id="textbox"> 
+        <div class="col-sm-2">
+            <input class="form-control" type="text" placeholder="Player 1" style=margin-top:90px;>
+            <input class="form-control" type="text" placeholder="Player 2">
+        </div>
+    </center>
+</body>
+<script>
+    $(document).ready(function(){
+        // Establish connection with server
+        var socket = io.connect('http://localhost:5000');
+        
+        $('input.sync').on('input', function(event) {
+            socket.emit('New answer added', {
+                who: $(this).attr('id'),
+                data: $(this).val()
+            });
+            return false;
+        });
+        
+        socket.on('after connect', function(msg) {
+            console.log('After connect', msg);
+        });
+        
+        socket.on('update value', function(msg) {
+            console.log('Slider value updated');
+            $('#' + msg.who).val(msg.data);
+        });
+    });
+</script>
+<script type = "text/javascript">
+    var timer = null;
+    var images = [], x = -1;
+          images[0] = "{{url_for('static', filename='1.png')}}";
+          images[1] = "{{url_for('static', filename='2.png')}}";
+          images[2] = "{{url_for('static', filename='3.png')}}";
+          images[3] = "{{url_for('static', filename='4.png')}}";
+          images[4] = "{{url_for('static', filename='5.png')}}";
+          images[5] = "{{url_for('static', filename='6.png')}}";
+          images[6] = "{{url_for('static', filename='7.png')}}";
+          images[7] = "{{url_for('static', filename='gameOver.png')}}";
+    function displayNextImage() {
+        x = (x === images.length - 1) ? 0 : x + 1;
+        document.getElementById("img").src = images[x];
+        if( x == 7){
+            clearInterval(timer);
+        }
+    }
+
+    function displayPreviousImage() {
+        x = (x <= 0) ? images.length - 1 : x - 1;
+        document.getElementById("img").src = images[x];
+    }
+    function startTimer() {
+        timer = setInterval(displayNextImage, 7000);
+    }
+</script>
+
+</html>
