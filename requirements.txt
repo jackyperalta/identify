@@ -1,0 +1,4 @@
+flask
+flask-socketio
+google-cloud-vision
+eventlet

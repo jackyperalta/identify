@@ -9,7 +9,7 @@ os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'careful-rock-306004-28c6024b49ee
 
 client = vision.ImageAnnotatorClient()
 
-for x in range(1,7):
+for x in range(1,8):
     num = str(x)
     file_name = os.path.abspath('./static/'+num+'.png')
 
@@ -24,5 +24,3 @@ for x in range(1,7):
 
     for object_ in objects:
         list_of_objects.append(object_.name)
-
-#print(list_of_objects)

@@ -1,0 +1,174 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>IDENTIFY</title>
+    <link rel="shortcut icon" type="image/png" href="{{url_for('static', filename='favicon.png')}}"/>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous"/>
+</head>
+<style>
+    #exit {
+        padding: 2px 8px;
+        font-weight: bold;
+        height: 50%;
+    }
+    #menu {
+        padding: 15px 25px;
+        display: flex;
+    }
+    #menu p.welcome {
+        flex: 1;
+    }
+    #chatbox {
+        text-align: left;
+        margin: 0 auto;
+        margin-bottom: 25px;
+        padding: 10px;
+        background: #fff;
+        height: 600px;
+        width: 530px;
+        border: 1px solid #a7a7a7;
+        overflow: auto;
+        border-radius: 4px;
+    }
+    #vision-image {
+        padding: 10px;
+        background: #fff;
+        height: 700px;
+        width:auto;
+    }
+    #vision-responses {
+        padding: 10px;
+        background: rgb(138, 92, 92);
+        height: 100px;
+        width:auto;
+    }
+    #wrapper {
+        padding: 10px;
+        background: #bab0e9;
+        height: 800px;
+        width:auto; 
+    }
+    form {
+        padding: 15px 25px;
+        display: flex;
+        gap: 20px;
+        justify-content: left;
+    }
+    .form-group {
+        width: 500%;
+    }
+    #submitmsg {
+        height:75%;
+        color: #5F17F0;
+        background-color: #5CE1E6;
+        border-color: #5CE1E6;
+        font-weight: bold;
+    }
+    #submitmsg:hover {
+        color: #5CE1E6;
+        background-color: #5F17F0;
+        border-color: #5F17F0;
+        font-weight: bold;
+    }
+</style>
+<body background="{{url_for('static', filename='background.png')}}">
+    <center><img src="{{url_for('static', filename='logo.png')}}" alt="Identify" width="400" height=auto></center>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-8">
+                <div id="vision-image">
+                    <!-- begin displaying images here after a user clicks the start button and will be displayed to all users -->
+                </div>
+                <div id="vision-responses">
+                    <!-- after a period of time, responses from google vision api will be displayed here -->
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div id="wrapper">
+                    <div id="menu">
+                        <p class="welcome">Welcome, {{ username }}<b></b></p>
+                        <button type="submit" id="exit" class="btn btn-danger">Leave Chat</button>
+                    </div>
+                    <div id="chatbox"></div>
+                    <form id="message_input_form" action="message" method="POST">
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="usermsg" placeholder="message" autocomplete="off">
+                        </div>
+                        <button type="submit" id="submitmsg" class="btn btn-primary">Send</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script><script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+<script>
+    $(document).ready(function(){
+        var socket = io.connect('http://127.0.0.1:5000/');
+        
+        socket.on('connect', function() {
+            socket.emit('join_room', {
+                username: "{{ username }}",
+                room: "{{ room }}"
+            });
+
+            var usermsg = document.getElementById('usermsg');
+
+            document.getElementById('message_input_form').onsubmit = function(e) {
+                e.preventDefault();
+                var message = usermsg.value.trim();
+                if(message.length) {
+                    socket.emit('send_message', {
+                        username: "{{ username }}",
+                        room: "{{ room }}",
+                        message: message
+                    })
+                }
+                usermsg.value = '';
+                usermsg.focus();
+            }
+        });
+
+        socket.on('receive_message', function (data) {
+            var newNode = document.createElement('div');
+            newNode.innerHTML = `<b>${data.username}:&nbsp;</b> ${data.message}`;
+            document.getElementById('chatbox').appendChild(newNode);
+        });
+
+        socket.on('join_room_announcement', function(data) {
+            var newNode = document.createElement('div');
+            newNode.innerHTML = `<b>${data.username}</b> has joined the room`;
+            document.getElementById('chatbox').appendChild(newNode);
+        });
+    });
+</script>
+<script type = "text/javascript">
+    var timer = null;
+    var images = [], x = -1;
+          images[0] = "{{url_for('static', filename='1.png')}}";
+          images[1] = "{{url_for('static', filename='2.png')}}";
+          images[2] = "{{url_for('static', filename='3.png')}}";
+          images[3] = "{{url_for('static', filename='4.png')}}";
+          images[4] = "{{url_for('static', filename='5.png')}}";
+          images[5] = "{{url_for('static', filename='6.png')}}";
+          images[6] = "{{url_for('static', filename='7.png')}}";
+          images[7] = "{{url_for('static', filename='gameOver.png')}}";
+    function displayNextImage() {
+        x = (x === images.length - 1) ? 0 : x + 1;
+        document.getElementById("img").src = images[x];
+        if( x == 7){
+            clearInterval(timer);
+        }
+    }
+
+    function displayPreviousImage() {
+        x = (x <= 0) ? images.length - 1 : x - 1;
+        document.getElementById("img").src = images[x];
+    }
+    function startTimer() {
+        timer = setInterval(displayNextImage, 7000);
+    }
+</script>
+</html>
